@@ -44,7 +44,7 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
 
     if (!movie) return null;
 
-    const getImageUrl = (path: string) => 
+    const getImageUrl = (path: string | null) => 
         path ? `https://image.tmdb.org/t/p/original${path}` : '/placeholder-backdrop.jpg';
 
     return createPortal(
