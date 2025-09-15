@@ -3,10 +3,10 @@ import styles from './MovieGrid.module.css';
 
 interface MovieGridProps {
     movies: Movie[];
-    onMovieSelect: (movie: Movie) => void;
+    onSelect: (movie: Movie) => void;
 }
 
-export default function MovieGrid({ movies, onMovieSelect }: MovieGridProps) {
+export default function MovieGrid({ movies, onSelect }: MovieGridProps) {
     const getImageUrl = (path: string | null) =>
         path ? `https://image.tmdb.org/t/p/w500${path}` : '/placeholder-movie.jpg';
 
@@ -14,7 +14,7 @@ export default function MovieGrid({ movies, onMovieSelect }: MovieGridProps) {
         <ul className={styles.grid}>
             {movies.map((movie) => (
                 <li key={movie.id}>
-                    <div className={styles.card} onClick={() => onMovieSelect(movie)}>
+                    <div className={styles.card} onClick={() => onSelect(movie)}>
                         <img
                             className={styles.image}
                             src={getImageUrl(movie.poster_path)}

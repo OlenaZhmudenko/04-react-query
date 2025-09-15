@@ -16,22 +16,15 @@ export default function App() {
     const [query, setQuery] = useState('');
     const [page, setPage] = useState(1);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-    const [previousData, setPreviousData] = useState<MoviesResponse | undefined>();
 
     const { data, isLoading, isError, error } = useQuery<MoviesResponse, Error>({
        queryKey: ['movies', query, page],
        queryFn: () => fetchMovies(query, page),
        enabled: query.length > 0,
+       keepPreviousData: true,
      });  
 
-     useEffect(() => {
-        if (data) {
-            setPreviousData(data);
-        }
-     }, [data]);
-
-     const displayMovies = data?.results || previousData?.results || [];
-     const totalPages = data?.total_pages || previousData?.total_pages || 0;
+    const moviesData = data as MoviesResponse | undefined;
 
      useEffect(() => {
         if (isError && error) {
@@ -41,16 +34,15 @@ export default function App() {
      }, [isError, error]);
 
      useEffect(() => {
-        if (data && data.results.length === 0 && query.length > 0) {
+        if (moviesData && moviesData.results.length === 0 && query.length > 0) {
             toast.error('No movies found for your request.');
         }
-     }, [data, query]);
+     }, [moviesData, query]);
 
 
     const handleSearch = useCallback((searchQuery: string) => {
         setQuery(searchQuery);
         setPage(1);
-        setPreviousData(undefined);
     }, []);
 
     const handleSelectMovie = useCallback((movie: Movie) => {
@@ -76,17 +68,17 @@ export default function App() {
                 {isError && !isLoading && (
                     <ErrorMessage message={error?.message || 'Unknown error'} />)}
           
-            {!isLoading && !isError && displayMovies.length > 0 && (
+            {!isLoading && !isError && moviesData && moviesData.results.length > 0 && (
                 <>
-                <MovieGrid movies={displayMovies} onMovieSelect={handleSelectMovie} />
+                <MovieGrid movies={moviesData.results} onSelect={handleSelectMovie} />
 
-                {totalPages > 1 && (
+                {moviesData.total_pages > 1 && (
                     <ReactPaginate
-                    pageCount={totalPages}
+                    pageCount={moviesData.total_pages}
                     pageRangeDisplayed={5}
                     marginPagesDisplayed={1}
                     onPageChange={handlePageChange}
-                    forcePage={data ? page -1 : undefined}
+                    forcePage={page - 1}
                     containerClassName={styles.pagination}
                     activeClassName={styles.active}
                     nextLabel="→"
