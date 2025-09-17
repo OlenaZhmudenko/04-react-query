@@ -17,11 +17,11 @@ export default function App() {
     const [page, setPage] = useState(1);
     const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-    const { data, isLoading, isError, error } = useQuery<MoviesResponse, Error>({
+    const { data, isLoading, isError, error, isSuccess, isFetching } = useQuery<MoviesResponse, Error>({
        queryKey: ['movies', query, page],
        queryFn: () => fetchMovies(query, page),
        enabled: query.length > 0,
-       keepPreviousData: true,
+       placeholderData: (previousData) => previousData,
      });  
 
     const moviesData = data as MoviesResponse | undefined;
@@ -34,10 +34,10 @@ export default function App() {
      }, [isError, error]);
 
      useEffect(() => {
-        if (moviesData && moviesData.results.length === 0 && query.length > 0) {
+        if (isSuccess && moviesData && moviesData.results.length === 0 && query.length > 0) {
             toast.error('No movies found for your request.');
         }
-     }, [moviesData, query]);
+     }, [isSuccess, moviesData, query]);
 
 
     const handleSearch = useCallback((searchQuery: string) => {
@@ -63,12 +63,12 @@ export default function App() {
         
             <SearchBar onSubmit={handleSearch} />
         
-                {isLoading && <Loader />}
+                {isLoading || isFetching && <Loader />}
           
                 {isError && !isLoading && (
                     <ErrorMessage message={error?.message || 'Unknown error'} />)}
           
-            {!isLoading && !isError && moviesData && moviesData.results.length > 0 && (
+            {isSuccess && moviesData && moviesData.results.length > 0 && (
                 <>
                 <MovieGrid movies={moviesData.results} onSelect={handleSelectMovie} />
 
@@ -87,7 +87,9 @@ export default function App() {
                 )}
   </>
             )}
+            {selectedMovie && (
             <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
+            )}
         </div>
     );
     }
